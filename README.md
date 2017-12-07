@@ -1,4 +1,3 @@
-
 # Meteor
 
 * TODO Add TravisCI Build Status
@@ -70,7 +69,7 @@ Many client libraries follow the lead of [google/go-github](https://github.com/g
 
 ## Contributing
 
-See the [Contributing Guide](https://gist.github.com/dghubble/be682c123727f70bcfe7).
+See the [Contributing Guide](CONTRIBUTING.md).
 
 ## License
 

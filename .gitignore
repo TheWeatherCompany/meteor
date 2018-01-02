@@ -1,12 +1,9 @@
-# Created by .ignore support plugin (hsz.mobi)
-### Example user template template
-### Example user template
-
 # IntelliJ project files
 .idea
 *.iml
 out
-gen### Go template
+gen
+
 # Binaries for programs and plugins
 *.exe
 *.dll
@@ -22,3 +19,6 @@ gen### Go template
 # Project-local glide cache, RE: https://github.com/Masterminds/glide/issues/736
 .glide/
 
+# Ignore deprecated
+*.bak
+_deprecated/

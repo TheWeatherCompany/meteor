@@ -14,15 +14,12 @@ const (
 // Credentials holds the keys used for the API
 type Credentials map[string]string
 
-func NewCredentials(sun, dsx, wx string) Credentials {
-	return Credentials{
-		"sun": sun,
-		"dsx": dsx,
-		"wx":  wx,
-	}
+// NewCredentials returns new credentials map.
+func NewCredentials(creds map[string]string) Credentials {
+	return creds
 }
 
-// Meteor manages communication with the Wx API.
+// Meteor manages communication with any API.
 type Meteor struct {
 	// HTTP client used to communicate with the API.
 	httpClient *http.Client
@@ -35,10 +32,11 @@ type Meteor struct {
 	// Reuse a single struct instead of allocating one for each service on the heap.
 	Common *Service
 
-	// User agent used when communicating with the GitHub API.
+	// User agent used when communicating with the API.
 	UserAgent string
 }
 
+// GetCredBy gets a credential by key.
 func (c *Meteor) GetCredBy(key string) string {
 	if v, ok := c.credentials[key]; ok {
 		return v
@@ -46,6 +44,7 @@ func (c *Meteor) GetCredBy(key string) string {
 	return ""
 }
 
+// GetHTTPClient gets the HTTP Client.
 func (c *Meteor) GetHTTPClient() *http.Client {
 	return c.httpClient
 }

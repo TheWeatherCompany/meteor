@@ -17,10 +17,14 @@ type bodyProvider struct {
 	body io.Reader
 }
 
+// ContentType gets the content type of the body.
+// Implements BodyProvider interface
 func (p bodyProvider) ContentType() string {
 	return ""
 }
 
+// Body returns the body of the provider
+// Implements BodyProvider interface
 func (p bodyProvider) Body() (io.Reader, error) {
 	return p.body, nil
 }

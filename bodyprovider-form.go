@@ -13,10 +13,14 @@ type formBodyProvider struct {
 	payload interface{}
 }
 
+// ContentType gets the content type (formContentType) of the body.
+// Implements BodyProvider interface
 func (p formBodyProvider) ContentType() string {
 	return formContentType
 }
 
+// Body returns the body of the provider
+// Implements BodyProvider interface
 func (p formBodyProvider) Body() (io.Reader, error) {
 	values, err := goquery.Values(p.payload)
 	if err != nil {

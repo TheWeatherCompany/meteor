@@ -13,88 +13,44 @@ func (C *Common) Do(c *Service) error {
 		return err
 	}
 
-	fmt.Println(req.URL.String())
-	//c.Responder(JSONSuccessResponder(successV))
+	//fmt.Println(req.URL.String())
 	_, err = c.Do(req)
-	//_, err = c.Do(req, &successV, nil)
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-//func (C *Common) Do(c *Service, successV interface{}) error {
-//	req, err := c.Request()
-//	if err != nil {
-//		return err
-//	}
-//
-//	fmt.Println(req.URL.String())
-//	c.Responder(JSONSuccessResponder(successV))
-//	_, err = c.Do(req)
-//	//_, err = c.Do(req, &successV, nil)
-//	if err != nil {
-//		return err
-//	}
-//	return nil
-//}
-
-//func (C *Common) DoBinary(c *Service) (error, []byte) {
-//
-//
-//	//fmt.Println(req.URL.String())
-//
-//	//var successV []byte
-//	//c.Responder(BinarySuccessResponder(&successV))
-//	err := C.Do(c)
-//	//err := C.Do(c, successV)
-//
-//
-//	//req, err := c.Request()
-//	//if err != nil {
-//	//	return err, nil
-//	//}
-//	//successV, err := c.DoBinary(req)
-//
-//
-//
-//	//if resp.Header.Get("Accept-Ranges") == "bytes" {
-//	//	var buf []byte
-//	//	buf, err = ioutil.ReadAll(resp.Body)
-//	//	if isOk(resp.StatusCode) {
-//	//		successV = buf
-//	//	}
-//	//}
-//	//return err
-//	//return err, successV
-//	return err, []byte{}
-//}
-
-
+// AsyncRequest is the type for asynchronous requests.
+// Implements Request interface
 type AsyncRequest struct {
 	Responder Responder
 	Request *http.Request
-	//Success interface{}
-	//Failure interface{}
 	Error    error
 }
 
+// GetRequest gets the request.
 func (ar *AsyncRequest) GetRequest() *http.Request {
 	return ar.Request
 }
 
+// GetSuccess gets the success struct.
 func (ar *AsyncRequest) GetSuccess() interface{} {
 	return ar.Responder.GetSuccess()
 }
 
+// GetFailure gets the failure struct.
 func (ar *AsyncRequest) GetFailure() interface{} {
 	return ar.Responder.GetFailure()
 }
 
+// GetError gets the error.
 func (ar *AsyncRequest) GetError() error {
 	return ar.Error
 }
 
+// AsyncResponse is the type for asynchronous responses.
+// Implements Response interface.
 type AsyncResponse struct {
 	responder Responder
 	Response *http.Response
@@ -103,18 +59,22 @@ type AsyncResponse struct {
 	Error    error
 }
 
+// GetRequest gets the request.
 func (ar *AsyncResponse) GetRequest() *http.Response {
 	return ar.Response
 }
 
+// GetSuccess gets the success struct.
 func (ar *AsyncResponse) GetSuccess() interface{} {
 	return ar.Success
 }
 
+// GetFailure gets the failure struct.
 func (ar *AsyncResponse) GetFailure() interface{} {
 	return ar.Failure
 }
 
+// GetError gets the error.
 func (ar *AsyncResponse) GetError() error {
 	return ar.Error
 }

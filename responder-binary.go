@@ -6,12 +6,14 @@ import (
 )
 
 /** Binary Responder */
+// BinarySuccessResponder creates a binary response with Success.
 func BinarySuccessResponder() *binaryResponder {
 	return &binaryResponder{
 		Success: &[]byte{},
 	}
 }
 
+// BinaryResponder creates a binary response with Failure and Success.
 func BinaryResponder(failure interface{}) *binaryResponder {
 	return &binaryResponder{
 		Failure: failure,
@@ -28,6 +30,7 @@ type binaryResponder struct {
 	Success  interface{}
 }
 
+// Respond creates the proper response object.
 func (r *binaryResponder) Respond(req *http.Request, resp *http.Response, err error) Responder {
 	r.Request = req
 	r.Response = resp
@@ -36,6 +39,7 @@ func (r *binaryResponder) Respond(req *http.Request, resp *http.Response, err er
 	return r
 }
 
+// DoResponse does the actual response falling back on JSONResponse for errors.
 func (r *binaryResponder) DoResponse() (*http.Response, error) {
 	defer r.Response.Body.Close()
 
@@ -55,10 +59,12 @@ func (r *binaryResponder) DoResponse() (*http.Response, error) {
 	return r.Response, r.Error
 }
 
+// GetSuccess gets the success struct.
 func (r *binaryResponder) GetSuccess() interface{} {
 	return r.Success
 }
 
+// GetFailure gets the failure struct.
 func (r *binaryResponder) GetFailure() interface{} {
 	return r.Failure
 }

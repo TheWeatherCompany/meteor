@@ -24,6 +24,9 @@ type Doer interface {
 	Do(req *http.Request) (*http.Response, error)
 }
 
+// ResponseChecker is a function to check responses to determine whether
+// the response should return without processing the body. Returning true
+// will short-curcuit the BodyProvider.
 type ResponseChecker func(*http.Response, error) (bool, error)
 
 // Service is an HTTP Request builder and sender.
@@ -109,14 +112,16 @@ func (s *Service) Doer(doer Doer) *Service {
 	return s
 }
 
+// CheckResponse adds a ResponseChecker.
 func (s *Service) CheckResponse(checker ResponseChecker) *Service {
 	s.checkers = append(s.checkers, checker)
 	return s
 }
 
-// Check204Response Don't try to decode on 204s
+// Check204Response checks the response for NoContent Status Code (204)
+// if the status code is 204, it returns true.
 func (s *Service) Check204Response(resp *http.Response, err error) (bool, error) {
-	if resp.StatusCode == 204 {
+	if resp.StatusCode == http.StatusNoContent {
 		return true, nil
 	}
 
@@ -422,12 +427,11 @@ func (s *Service) Do(req *http.Request) (*http.Response, error) {
 	return r.DoResponse()
 }
 
+// doChecks performs the checks on the response.
 func (s *Service) doChecks(resp *http.Response, err error) bool {
 	// Perform chainable checks on the response
 	for _, checkerFn := range s.checkers {
-		//var shouldReturn bool
-		//if shouldReturn, err := checkerFn(resp, err); shouldReturn {
-		// TODO What should I do on err!
+		// TODO What should I do on err!?
 		if shouldReturn, _ := checkerFn(resp, err); shouldReturn {
 			return shouldReturn
 		}
@@ -435,6 +439,8 @@ func (s *Service) doChecks(resp *http.Response, err error) bool {
 	return false
 }
 
+// doAsync helps DoAsync by performing the actual request returning
+// the response on the proper channel.
 func (s *Service) doAsync(req AsyncRequest, ch chan<- *AsyncResponse) {
 	//resp, err := s.Do(req.Request, req.Success, req.Failure)
 	//ch <- &AsyncResponse{resp, req.Success, req.Failure, err}
@@ -448,6 +454,7 @@ func (s *Service) doAsync(req AsyncRequest, ch chan<- *AsyncResponse) {
 	}
 }
 
+// DoAsync performs the requests in an asychronous pattern.
 func (s *Service) DoAsync(reqs []AsyncRequest) []*AsyncResponse {
 	l := len(reqs)
 	ch := make(chan *AsyncResponse, l)
@@ -469,12 +476,14 @@ func (s *Service) DoAsync(reqs []AsyncRequest) []*AsyncResponse {
 	return responses
 }
 
+// DecodeResponse decodes the JSON response.
 func (s *Service) DecodeResponse(resp *http.Response, v interface{}) (err error) {
 	return decodeResponseBodyJSON(resp, v)
 }
 
+// isOk determines whether the HTTP Status Code is an OK Code (200-299)
 func isOk(statusCode int) bool {
-	return (200 <= statusCode && statusCode <= 299)
+	return (http.StatusOK <= statusCode && statusCode <= 299)
 }
 
 var c = &http.Client{
@@ -487,6 +496,7 @@ var c = &http.Client{
 	//}
 }
 
+// getDefaultClient gets the default client with a 5 minute timeout.
 func getDefaultClient() *http.Client {
 	return c
 }

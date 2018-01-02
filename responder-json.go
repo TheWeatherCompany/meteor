@@ -8,11 +8,14 @@ import (
 )
 
 /** JSON Responder */
+// JSONSuccessResponder creates a json response with Success.
 func JSONSuccessResponder(success interface{}) *jsonResponder {
 	return &jsonResponder{
 		Success: success,
 	}
 }
+
+// JSONResponder creates a json response with Failure and Success.
 func JSONResponder(success, failure interface{}) *jsonResponder {
 	return &jsonResponder{
 		Failure: failure,
@@ -29,6 +32,7 @@ type jsonResponder struct {
 	Success  interface{}
 }
 
+// Respond creates the proper response object.
 func (r *jsonResponder) Respond(req *http.Request, resp *http.Response, err error) Responder {
 	r.Request = req
 	r.Response = resp
@@ -37,18 +41,20 @@ func (r *jsonResponder) Respond(req *http.Request, resp *http.Response, err erro
 	return r
 }
 
+// DoResponse does the actual response decoding from json.
 func (r *jsonResponder) DoResponse() (*http.Response, error) {
-	// Decode from json
 	if r.Success != nil || r.Failure != nil {
 		r.Error = decodeResponseJSON(r.Response, r.Success, r.Failure)
 	}
 	return r.Response, r.Error
 }
 
+// GetSuccess gets the success struct.
 func (r *jsonResponder) GetSuccess() interface{} {
 	return r.Success
 }
 
+// GetFailure gets the failure struct.
 func (r *jsonResponder) GetFailure() interface{} {
 	return r.Failure
 }
@@ -89,8 +95,5 @@ func decodeResponseBodyJSON(resp *http.Response, v interface{}) (err error) {
 		}
 	}
 	return err
-
-	// Original Sling
-	//return json.NewDecoder(resp.Body).Decode(v)
 }
 

@@ -1,9 +1,5 @@
 # Meteor
 
-* TODO Add TravisCI Build Status
-* TODO Add GoLang Docs
-* TODO Add a logo here.
-
 Meteor is a Go HTTP client library for creating and sending API requests.
 
 Meteor stores HTTP Request properties to simplify sending requests and decoding responses. Check [usage](#usage) or the [examples](examples) to learn how to compose a Meteor into your API client.
@@ -60,6 +56,12 @@ req, err := Meteor.New().Post("http://upload.com/gophers")
 s := Meteor.New().Base(baseUrl).Set("User-Agent", "Gophergram API Client")
 req, err := s.New().Get("gophergram/list").Request()
 ```
+
+## TODO
+
+* TODO Add TravisCI Build Status
+* TODO Add GoLang Docs
+* TODO Add a logo here.
 
 ## Motivation
 

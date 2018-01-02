@@ -1,1 +1,5 @@
-package examples
+package main
+
+func main() {
+
+}

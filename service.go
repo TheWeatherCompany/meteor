@@ -216,11 +216,22 @@ func basicAuth(username, password string) string {
 
 // Url
 
-// Base sets the rawURL. If you intend to extend the url with Path,
-// baseUrl should be specified with a trailing slash.
-func (s *Service) Base(rawURL string) *Service {
+// RawBase sets the rawURL. If you intend to extend the url with Path,
+// baseUrl should be specified with a trailing slash, or just use Base.
+func (s *Service) RawBase(rawURL string) *Service {
 	s.rawURL = rawURL
 	return s
+}
+
+// Base sets the rawURL.
+func (s *Service) Base(rawURL string) *Service {
+	s.rawURL = s.slashIt(rawURL)
+	return s
+}
+
+// slashIt adds a trailing slash to the string ensuring there are no double slashes.
+func (s *Service) slashIt(str string) string {
+	return strings.TrimSuffix(str, "/") + "/"
 }
 
 // Path extends the rawURL with the given path by resolving the reference to

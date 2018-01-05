@@ -6,7 +6,9 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"time"
+	"reflect"
+	"strings"
+	"fmt"
 
 	goquery "github.com/google/go-querystring/query"
 )
@@ -91,7 +93,7 @@ func (s *Service) New() *Service {
 // the http.DefaultClient will be used.
 func (s *Service) Client(httpClient *http.Client) *Service {
 	if httpClient == nil {
-		return s.Doer(getDefaultClient())
+		return s.Doer(http.DefaultClient)
 	}
 	return s.Doer(httpClient)
 }
@@ -310,6 +312,16 @@ func (s *Service) Request() (*http.Request, error) {
 	return req, err
 }
 
+// AsyncRequest returns a new AsyncRequest created with the Service properties.
+// Returns any errors parsing the rawURL, encoding query structs, encoding
+// the body, or creating the AsyncRequest.
+func (s *Service) AsyncRequest(responder Responder) *AsyncRequest {
+	if responder == nil {
+		responder = s.GetResponder()
+	}
+	return NewAsyncRequestWithResponder(s, responder)
+}
+
 // addQueryStructs parses url tagged query structs using go-querystring to
 // encode them to url.Values and format them onto the url.RawQuery. Any
 // query parsing or encoding errors are returned.
@@ -444,19 +456,4 @@ func (s *Service) DecodeResponse(resp *http.Response, v interface{}) (err error)
 // isOk determines whether the HTTP Status Code is an OK Code (200-299)
 func isOk(statusCode int) bool {
 	return (http.StatusOK <= statusCode && statusCode <= 299)
-}
-
-var c = &http.Client{
-	Timeout: time.Minute * 5,
-	//Transport: &http.Transport{
-	//	Dial: (&net.Dialer{
-	//		Timeout: 5 * time.Second,
-	//	}).Dial,
-	//	TLSHandshakeTimeout: 5 * time.Second,
-	//}
-}
-
-// getDefaultClient gets the default client with a 5 minute timeout.
-func getDefaultClient() *http.Client {
-	return c
 }

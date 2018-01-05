@@ -1,7 +1,18 @@
 package meteor
 
+//go:generate moq -out bodyprovider_mocks_test.go . BodyProvider
+
 import (
 	"io"
+)
+
+const (
+	jpegContentType = "image/jpeg"
+	pngContentType  = "image/png"
+	gifContentType  = "image/gif"
+	textContentType = "text/plain"
+	jsonContentType = "application/json"
+	formContentType = "application/x-www-form-urlencoded"
 )
 
 // BodyProvider provides Body content for http.Request attachment.

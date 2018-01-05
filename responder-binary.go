@@ -37,17 +37,10 @@ func (r *binaryResponder) Respond(req *http.Request, resp *http.Response, err er
 func (r *binaryResponder) DoResponse() (*http.Response, error) {
 	defer r.Response.Body.Close()
 
-	if r.Success != nil {
+	if isOk(r.Response.StatusCode) {
 		r.Success, r.Error = ioutil.ReadAll(r.Response.Body)
-	}
-
-	if r.Error != nil {
-		if r.Failure != nil {
-			responder := JSONResponder(nil, r.Failure)
-			r := responder.Respond(r.Request, r.Response, r.Error)
-			return r.DoResponse()
-		}
-		return r.Response, r.Error
+	} else if r.Failure != nil {
+		r.Error = decodeResponseJSON(r.Response, nil, r.Failure)
 	}
 
 	return r.Response, r.Error

@@ -202,14 +202,18 @@ func (s *Service) Deletef(format string, a ...interface{}) *Service {
 // Add adds the key, value pair in Headers, appending values for existing keys
 // to the key's values. Header keys are canonicalized.
 func (s *Service) Add(key, value string) *Service {
-	s.header.Add(key, value)
+	if key != "" {
+		s.header.Add(key, value)
+	}
 	return s
 }
 
 // Set sets the key, value pair in Headers, replacing existing values
 // associated with key. Header keys are canonicalized.
 func (s *Service) Set(key, value string) *Service {
-	s.header.Set(key, value)
+	if key != "" {
+		s.header.Set(key, value)
+	}
 	return s
 }
 

@@ -418,6 +418,8 @@ func (s *Service) BodyForm(body interface{}) *Service {
 	return s.BodyProvider(formBodyProvider{payload: body})
 }
 
+// Responders
+
 // Responder sets the Service's responder.
 func (s *Service) Responder(responder Responder) *Service {
 	if responder == nil {
@@ -427,15 +429,27 @@ func (s *Service) Responder(responder Responder) *Service {
 	return s
 }
 
-// JSONResponder sets the Service's responder to do JSON.
+// JSONResponder sets the Service's responder to handle a JSON response.
 func (s *Service) JSONResponder(success, failure interface{}) *Service {
 	s.responder = JSONResponder(success, failure)
 	return s
 }
 
-// JSONResponder sets the Service's responder to do JSON for success only.
-func (s *Service) SuccessJSONResponder(success interface{}) *Service {
-	s.responder = JSONResponder(success, nil)
+// JSONResponder sets the Service's responder to handle a JSON response for successes only.
+func (s *Service) JSONSuccessResponder(success interface{}) *Service {
+	s.responder = JSONSuccessResponder(success)
+	return s
+}
+
+// BinaryResponder sets the Service's responder to handle a binary response.
+func (s *Service) BinaryResponder(failure interface{}) *Service {
+	s.responder = BinaryResponder(failure)
+	return s
+}
+
+// BinarySuccessResponder sets the Service's responder to handle a binary response for success only.
+func (s *Service) BinarySuccessResponder() *Service {
+	s.responder = BinarySuccessResponder()
 	return s
 }
 

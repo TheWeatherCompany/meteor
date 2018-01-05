@@ -221,12 +221,18 @@ func (s *Service) Set(key, value string) *Service {
 // with the provided username and password. With HTTP Basic Authentication
 // the provided username and password are not encrypted.
 func (s *Service) SetBasicAuth(username, password string) *Service {
+	if username == "" && password == "" {
+		return s.Set("Authorization", "Basic ")
+	}
 	return s.Set("Authorization", "Basic "+basicAuth(username, password))
 }
 
 // basicAuth returns the base64 encoded username:password for basic auth copied
 // from net/http.
 func basicAuth(username, password string) string {
+	if username == "" && password == "" {
+		return ""
+	}
 	auth := username + ":" + password
 	return base64.StdEncoding.EncodeToString([]byte(auth))
 }

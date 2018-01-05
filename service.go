@@ -276,6 +276,32 @@ func (s *Service) Path(path string) *Service {
 	return s
 }
 
+// Pathf extends the rawURL with the given path format by resolving the format and
+// the reference to an absolute URL. If parsing errors occur, the rawURL is left unmodified.
+func (s *Service) Pathf(format string, a ...interface{}) *Service {
+	return s.Path(fmt.Sprintf(format, a...))
+}
+
+// ResetPath resets the path to a slash.
+func (s *Service) ResetPath() *Service {
+	return s.Path("/")
+}
+
+// Extension adds an extension to the end of the path. If parsing errors
+// occur, the rawURL is left unmodified.
+func (s *Service) Extension(ext string) *Service {
+	baseURL, baseErr := url.Parse(s.rawURL)
+	if baseErr == nil && ext != "" {
+		rawURL := baseURL.String() + "." + strings.TrimLeft(ext, ".")
+		extURL, extErr := url.Parse(rawURL)
+		if extErr == nil {
+			s.rawURL = baseURL.ResolveReference(extURL).String()
+		}
+		return s
+	}
+	return s
+}
+
 // QueryStruct appends the queryStruct to the Service's queryStructs. The value
 // pointed to by each queryStruct will be encoded as url query parameters on
 // new requests (see Request()).
@@ -482,7 +508,6 @@ func (s *Service) Do(req *http.Request) (*http.Response, error) {
 		}
 		resp.Body.Close()
 	}()
-
 
 	// Do correct Response
 	r := s.responder.Respond(req, resp, err)

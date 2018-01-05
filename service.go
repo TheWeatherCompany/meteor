@@ -6,7 +6,6 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"reflect"
 	"strings"
 	"fmt"
 
@@ -381,6 +380,7 @@ func (s *Service) Body(body io.Reader) *Service {
 }
 
 // BodyProvider sets the Service's body provider.
+// If body is nil, nothing is changed.
 func (s *Service) BodyProvider(body BodyProvider) *Service {
 	if body == nil {
 		return s

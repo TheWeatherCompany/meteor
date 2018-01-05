@@ -4,6 +4,7 @@ package meteor
 
 import (
 	"io"
+	"errors"
 )
 
 const (
@@ -37,5 +38,8 @@ func (p bodyProvider) ContentType() string {
 // Body returns the body of the provider
 // Implements BodyProvider interface
 func (p bodyProvider) Body() (io.Reader, error) {
+	if p.body == nil {
+		return nil, errors.New("no body reader")
+	}
 	return p.body, nil
 }

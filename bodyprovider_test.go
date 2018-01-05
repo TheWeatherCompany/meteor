@@ -39,6 +39,7 @@ func Test_bodyProvider_Body(t *testing.T) {
 		want    io.Reader
 		wantErr bool
 	}{
+		{"nil", bodyProvider{}, nil, true},
 		{"generic", bodyProvider{strings.NewReader("raw body")}, strings.NewReader("raw body"), false},
 	}
 	for _, tt := range tests {

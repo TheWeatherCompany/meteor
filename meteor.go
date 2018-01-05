@@ -27,6 +27,7 @@ type Meteor struct {
 	// Credentials holder
 	credentials Credentials
 
+	// HTTP Requests holder
 	requests []*http.Request
 
 	// Reuse a single struct instead of allocating one for each service on the heap.
@@ -53,16 +54,18 @@ func (c *Meteor) GetHTTPClient() *http.Client {
 // provided, http.DefaultClient will be used. To use API methods which require
 // authentication, provide an http.Client that will perform the authentication
 // for you (such as that provided by the golang.org/x/oauth2 library).
-func NewMeteor(credentials Credentials, httpClient *http.Client) *Meteor {
-
-	if httpClient == nil {
-		httpClient = getDefaultClient()
+func NewMeteor(credentials Credentials, httpClient ...*http.Client) *Meteor {
+	var theClient *http.Client
+	if httpClient == nil || len(httpClient) == 0 || (len(httpClient) == 1 && httpClient[0] == nil) {
+		theClient = http.DefaultClient
+	} else {
+		theClient = httpClient[0]
 	}
 	c := &Meteor{
-		httpClient:  httpClient,
+		httpClient:  theClient,
 		credentials: credentials,
 		UserAgent:   UserAgent,
-		Common:      New().Client(httpClient),
+		Common:      New().Client(theClient),
 	}
 
 	return c

@@ -517,18 +517,19 @@ func addHeaders(req *http.Request, header http.Header) {
 	}
 }
 
-// Sending
+// Receiving
 
 // ReceiveSuccess creates a new HTTP request and returns the response. Success
-// responses (2XX) are JSON decoded into the value pointed to by successV.
-// Any error creating the request, sending it, or decoding a 2XX response
+// responses (2XX) are placed into the value pointed to by successV.
+// Any error creating the request, sending it, or decoding a response
 // is returned.
+// ReceiveSuccess is shorthand for calling Request and Do.
 func (s *Service) ReceiveSuccess(successV interface{}) (*http.Response, error) {
 	return s.Receive(successV, nil)
 }
 
 // Receive creates a new HTTP request and returns the response. Success
-// responses (2XX) are JSON decoded into the value pointed to by successV and
+// responses (2XX) are placed into the value pointed to by successV and
 // other responses are JSON decoded into the value pointed to by failureV.
 // Any error creating the request, sending it, or decoding the response is
 // returned.
@@ -545,10 +546,27 @@ func (s *Service) Receive(successV, failureV interface{}) (*http.Response, error
 	return resp, err
 }
 
-// Do sends an HTTP request and returns the response. Success responses (2XX)
-// are JSON decoded into the value pointed to by successV and other responses
-// are JSON decoded into the value pointed to by failureV.
-// Any error sending the request or decoding the response is returned.
+func (s *Service) GetResponder() Responder {
+	if s.responder == nil {
+		s.responder = GenericResponder()
+	}
+	return s.responder
+}
+
+func (s *Service) GetSuccess() interface{} {
+	return s.responder.GetSuccess()
+}
+
+func (s *Service) GetFailure() interface{} {
+	return s.responder.GetFailure()
+}
+
+// Sending
+
+// Do sends an HTTP request and returns the response. After the receiving the response,
+// this function cycles through the various response checkers to short-circuit the
+// Responder and return a raw Response and error. After checking the response, it will
+// response with the appropriate Responder.
 func (s *Service) Do(req *http.Request) (*http.Response, error) {
 	resp, err := s.httpClient.Do(req)
 	if err != nil {

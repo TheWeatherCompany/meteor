@@ -22,3 +22,6 @@ gen
 # Ignore deprecated
 *.bak
 _deprecated/
+
+# Environment File for Keys
+.env

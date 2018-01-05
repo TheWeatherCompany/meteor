@@ -13,8 +13,6 @@ import (
 
 const (
 	contentType     = "Content-Type"
-	jsonContentType = "application/json"
-	formContentType = "application/x-www-form-urlencoded"
 )
 
 // Doer executes http requests.  It is implemented by *http.Client.

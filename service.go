@@ -582,7 +582,17 @@ func (s *Service) GetFailure() interface{} {
 // this function cycles through the various response checkers to short-circuit the
 // Responder and return a raw Response and error. After checking the response, it will
 // response with the appropriate Responder.
-func (s *Service) Do(req *http.Request) (*http.Response, error) {
+func (s *Service) Do(request ...*http.Request) (*http.Response, error) {
+	var req *http.Request
+	if len(request) == 0 || (len(request) == 1 && request[0] == nil) {
+		var err error
+		req, err = s.Request()
+		if err != nil {
+			return nil, err
+		}
+	} else {
+		req = request[0]
+	}
 	resp, err := s.httpClient.Do(req)
 	if err != nil {
 		return resp, err

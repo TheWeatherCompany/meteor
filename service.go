@@ -87,6 +87,19 @@ func (s *Service) New() *Service {
 	}
 }
 
+// Reset resets the service entirely.
+func (s *Service) Reset() *Service {
+	s.httpClient = http.DefaultClient
+	s.method = "GET"
+	s.rawURL = ""
+	s.bodyProvider = nil
+	s.header = make(http.Header)
+	s.queryStructs = make([]interface{}, 0)
+	s.responder = GenericResponder()
+
+	return s
+}
+
 // Http Client
 
 // Service sets the http Service used to do requests. If a nil client is given,

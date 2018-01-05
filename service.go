@@ -6,6 +6,7 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
+	"reflect"
 	"strings"
 	"fmt"
 
@@ -309,7 +310,7 @@ func (s *Service) Extension(ext string) *Service {
 // The queryStruct argument should be a pointer to a url tagged struct. See
 // https://godoc.org/github.com/google/go-querystring/query for details.
 func (s *Service) QueryStruct(queryStruct interface{}) *Service {
-	if queryStruct != nil {
+	if queryStruct != nil && reflect.TypeOf(queryStruct).Kind() != reflect.Map {
 		s.queryStructs = append(s.queryStructs, queryStruct)
 	}
 	return s
@@ -600,5 +601,5 @@ func (s *Service) DoAsync(reqs []AsyncDoer) []*AsyncResponse {
 
 // isOk determines whether the HTTP Status Code is an OK Code (200-299)
 func isOk(statusCode int) bool {
-	return (http.StatusOK <= statusCode && statusCode <= 299)
+	return http.StatusOK <= statusCode && statusCode <= 299
 }

@@ -399,22 +399,22 @@ func (s *Service) BodyProvider(body BodyProvider) *Service {
 // will be JSON encoded as the Body on new requests (see Request()).
 // The bodyJSON argument should be a pointer to a JSON tagged struct. See
 // https://golang.org/pkg/encoding/json/#MarshalIndent for details.
-func (s *Service) BodyJSON(bodyJSON interface{}) *Service {
-	if bodyJSON == nil {
+func (s *Service) BodyJSON(body interface{}) *Service {
+	if body == nil {
 		return s
 	}
-	return s.BodyProvider(jsonBodyProvider{payload: bodyJSON})
+	return s.BodyProvider(jsonBodyProvider{payload: body})
 }
 
 // BodyForm sets the Service's bodyForm. The value pointed to by the bodyForm
 // will be url encoded as the Body on new requests (see Request()).
 // The bodyForm argument should be a pointer to a url tagged struct. See
 // https://godoc.org/github.com/google/go-querystring/query for details.
-func (s *Service) BodyForm(bodyForm interface{}) *Service {
-	if bodyForm == nil {
+func (s *Service) BodyForm(body interface{}) *Service {
+	if body == nil {
 		return s
 	}
-	return s.BodyProvider(formBodyProvider{payload: bodyForm})
+	return s.BodyProvider(formBodyProvider{payload: body})
 }
 
 // Responder sets the Service's responder.

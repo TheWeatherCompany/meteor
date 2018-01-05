@@ -260,6 +260,13 @@ func (s *Service) slashIt(str string) string {
 // Path extends the rawURL with the given path by resolving the reference to
 // an absolute URL. If parsing errors occur, the rawURL is left unmodified.
 func (s *Service) Path(path string) *Service {
+	if path == "" {
+		return s
+	}
+
+	if !strings.HasSuffix(s.rawURL, "/") {
+		s.rawURL += "/"
+	}
 	baseURL, baseErr := url.Parse(s.rawURL)
 	pathURL, pathErr := url.Parse(path)
 	if baseErr == nil && pathErr == nil {

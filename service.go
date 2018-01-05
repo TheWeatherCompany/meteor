@@ -79,7 +79,7 @@ func (s *Service) New() *Service {
 		headerCopy[k] = v
 	}
 	return &Service{
-		httpClient: s.httpClient,
+		httpClient:   s.httpClient,
 		method:       s.method,
 		rawURL:       s.rawURL,
 		header:       headerCopy,
@@ -591,7 +591,10 @@ func (s *Service) Do(request ...*http.Request) (*http.Response, error) {
 			return nil, err
 		}
 	} else {
+		//} else if len(request) == 1 {
 		req = request[0]
+		//} else {
+		//resps := s.DoAsync(reqs)
 	}
 	resp, err := s.httpClient.Do(req)
 	if err != nil {

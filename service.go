@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	contentType     = "Content-Type"
+	contentType = "Content-Type"
 )
 
 // Doer executes http requests.  It is implemented by *http.Client.
@@ -31,8 +31,6 @@ type ResponseChecker func(*http.Response, error) (bool, error)
 type Service struct {
 	// httpClient for doing requests
 	httpClient Doer
-	// ResponseChecker for validating responses
-	checkers []ResponseChecker
 	// HTTP method (GET, POST, etc.)
 	method string
 	// raw url string for requests
@@ -77,8 +75,7 @@ func (s *Service) New() *Service {
 		headerCopy[k] = v
 	}
 	return &Service{
-		httpClient:   s.httpClient,
-		checkers:     append(make([]ResponseChecker, 0), s.Check204Response),
+		httpClient: s.httpClient,
 		method:       s.method,
 		rawURL:       s.rawURL,
 		header:       headerCopy,
@@ -108,22 +105,6 @@ func (s *Service) Doer(doer Doer) *Service {
 		s.httpClient = doer
 	}
 	return s
-}
-
-// CheckResponse adds a ResponseChecker.
-func (s *Service) CheckResponse(checker ResponseChecker) *Service {
-	s.checkers = append(s.checkers, checker)
-	return s
-}
-
-// Check204Response checks the response for NoContent Status Code (204)
-// if the status code is 204, it returns true.
-func (s *Service) Check204Response(resp *http.Response, err error) (bool, error) {
-	if resp.StatusCode == http.StatusNoContent {
-		return true, nil
-	}
-
-	return false, err
 }
 
 // Method
@@ -412,29 +393,10 @@ func (s *Service) Do(req *http.Request) (*http.Response, error) {
 		resp.Body.Close()
 	}()
 
-	// Perform chainable checks on the response
-	for _, checkerFn := range s.checkers {
-		var shouldReturn bool
-		if shouldReturn, err = checkerFn(resp, err); shouldReturn {
-			return resp, err
-		}
-	}
 
 	// Do correct Response
 	r := s.responder.Respond(req, resp, err)
 	return r.DoResponse()
-}
-
-// doChecks performs the checks on the response.
-func (s *Service) doChecks(resp *http.Response, err error) bool {
-	// Perform chainable checks on the response
-	for _, checkerFn := range s.checkers {
-		// TODO What should I do on err!?
-		if shouldReturn, _ := checkerFn(resp, err); shouldReturn {
-			return shouldReturn
-		}
-	}
-	return false
 }
 
 // doAsync helps DoAsync by performing the actual request returning

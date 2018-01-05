@@ -318,6 +318,57 @@ func (s *Service) QueryStruct(queryStruct interface{}) *Service {
 
 // Body
 
+// ContentType sets the Service's Content Type.
+func (s *Service) ContentType(ct string) *Service {
+	if ct != "" {
+		s.Set(contentType, ct)
+	}
+
+	return s
+}
+
+// PlainText sets the Service's Content Type to textContentType ("text/plain").
+func (s *Service) PlainText() *Service {
+	s.Set(contentType, textContentType)
+
+	return s
+}
+
+// JSON sets the Service's Content Type to jsonContentType ("application/json").
+func (s *Service) JSON() *Service {
+	s.Set(contentType, jsonContentType)
+
+	return s
+}
+
+// JPEG sets the Service's Content Type to jpegContentType ("image/jpeg").
+func (s *Service) JPEG() *Service {
+	s.Set(contentType, jpegContentType)
+
+	return s
+}
+
+// GIF sets the Service's Content Type to gifContentType ("image/gif").
+func (s *Service) GIF() *Service {
+	s.Set(contentType, gifContentType)
+
+	return s
+}
+
+// PNG sets the Service's Content Type to pngContentType ("image/png").
+func (s *Service) PNG() *Service {
+	s.Set(contentType, pngContentType)
+
+	return s
+}
+
+// Form sets the Service's Content Type to formContentType ("application/x-www-form-urlencoded").
+func (s *Service) Form() *Service {
+	s.Set(contentType, formContentType)
+
+	return s
+}
+
 // Body sets the Service's body. The body value will be set as the Body on new
 // requests (see Request()).
 // If the provided body is also an io.Closer, the request Body will be closed

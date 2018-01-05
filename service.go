@@ -45,6 +45,8 @@ type Service struct {
 	bodyProvider BodyProvider
 	// responder
 	responder Responder
+	// async manager
+	async *async
 }
 
 // New returns a new Service with an http DefaultClient.
@@ -514,46 +516,17 @@ func (s *Service) Do(req *http.Request) (*http.Response, error) {
 	return r.DoResponse()
 }
 
-// doAsync helps DoAsync by performing the actual request returning
-// the response on the proper channel.
-func (s *Service) doAsync(req AsyncRequest, ch chan<- *AsyncResponse) {
-	//resp, err := s.Do(req.Request, req.Success, req.Failure)
-	//ch <- &AsyncResponse{resp, req.Success, req.Failure, err}
-	resp, err := s.Responder(req.Responder).Do(req.Request)
-	ch <- &AsyncResponse{
-		responder: s.responder,
-		Response:  resp,
-		Success:   s.responder.GetSuccess(),
-		Failure:   s.responder.GetFailure(),
-		Error:     err,
-	}
-}
-
 // DoAsync performs the requests in an asychronous pattern.
-func (s *Service) DoAsync(reqs []AsyncRequest) []*AsyncResponse {
-	l := len(reqs)
-	ch := make(chan *AsyncResponse, l)
-	responses := []*AsyncResponse{}
-	for _, req := range reqs {
-		go s.doAsync(req, ch)
+func (s *Service) DoAsync(reqs []AsyncDoer) []*AsyncResponse {
+	var responses []interface{}
+	s.async = NewAsync(s, reqs)
+	responses = s.async.Do()
+
+	results := make([]*AsyncResponse, 0)
+	for _, resp := range responses {
+		results = append(results, resp.(*AsyncResponse))
 	}
-
-	for {
-		select {
-		case r := <-ch:
-			responses = append(responses, r)
-			if len(responses) == l {
-				return responses
-			}
-		}
-	}
-
-	return responses
-}
-
-// DecodeResponse decodes the JSON response.
-func (s *Service) DecodeResponse(resp *http.Response, v interface{}) (err error) {
-	return decodeResponseBodyJSON(resp, v)
+	return results
 }
 
 // isOk determines whether the HTTP Status Code is an OK Code (200-299)

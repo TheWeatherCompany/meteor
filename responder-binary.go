@@ -22,13 +22,7 @@ func BinaryResponder(failure interface{}) *binaryResponder {
 }
 
 // binaryResponder
-type binaryResponder struct {
-	Request  *http.Request
-	Response *http.Response
-	Error    error
-	Failure  interface{}
-	Success  interface{}
-}
+type binaryResponder responder
 
 // Respond creates the proper response object.
 func (r *binaryResponder) Respond(req *http.Request, resp *http.Response, err error) Responder {

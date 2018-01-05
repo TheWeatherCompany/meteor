@@ -24,13 +24,7 @@ func JSONResponder(success, failure interface{}) *jsonResponder {
 }
 
 // jsonResponder
-type jsonResponder struct {
-	Request  *http.Request
-	Response *http.Response
-	Error    error
-	Failure  interface{}
-	Success  interface{}
-}
+type jsonResponder responder
 
 // Respond creates the proper response object.
 func (r *jsonResponder) Respond(req *http.Request, resp *http.Response, err error) Responder {

@@ -4,7 +4,7 @@ import (
 	"io"
 	"io/ioutil"
 	"net/http"
-	"github.com/pquerna/ffjson/ffjson"
+	"encoding/json"
 )
 
 /** JSON Responder */
@@ -83,7 +83,7 @@ func decodeResponseBodyJSON(resp *http.Response, v interface{}) (err error) {
 	if w, ok := v.(io.Writer); ok {
 		io.Copy(w, resp.Body)
 	} else {
-		err = ffjson.NewDecoder().DecodeReader(resp.Body, v)
+		err = json.NewDecoder(resp.Body).Decode(v)
 		if err == io.EOF {
 			err = nil // ignore EOF errors caused by empty response body
 		}

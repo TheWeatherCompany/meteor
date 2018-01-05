@@ -111,40 +111,77 @@ func (s *Service) Doer(doer Doer) *Service {
 
 // Method
 
-// Head sets the Service method to HEAD and sets the given pathURL.
-func (s *Service) Head(pathURL string) *Service {
-	s.method = "HEAD"
-	return s.Path(pathURL)
+// Method sets the Service method and the path to the given pathURL
+func (s *Service) Method(method string, pathURL ...string) *Service {
+	if method != "" {
+		s.method = method
+	}
+	return s.Path(strings.Join(pathURL, "/"))
 }
 
-// Get sets the Service method to GET and sets the given pathURL.
-func (s *Service) Get(pathURL string) *Service {
-	s.method = "GET"
-	return s.Path(pathURL)
+// Methodf sets the Service method and the path to the resolved path format.
+func (s *Service) Methodf(method string, format string, a ...interface{}) *Service {
+	return s.Method(method, fmt.Sprintf(format, a...))
 }
 
-// Post sets the Service method to POST and sets the given pathURL.
-func (s *Service) Post(pathURL string) *Service {
-	s.method = "POST"
-	return s.Path(pathURL)
+// Head sets the Service method to HEAD and the path to the given pathURL.
+func (s *Service) Head(pathURL ...string) *Service {
+	return s.Method("HEAD", pathURL...)
 }
 
-// Put sets the Service method to PUT and sets the given pathURL.
-func (s *Service) Put(pathURL string) *Service {
-	s.method = "PUT"
-	return s.Path(pathURL)
+// Headf sets the Service method to HEAD and the path to the resolved path format.
+func (s *Service) Headf(format string, a ...interface{}) *Service {
+	return s.Head(fmt.Sprintf(format, a...))
 }
 
-// Patch sets the Service method to PATCH and sets the given pathURL.
-func (s *Service) Patch(pathURL string) *Service {
-	s.method = "PATCH"
-	return s.Path(pathURL)
+// Get sets the Service method to GET and the path to the given pathURL.
+func (s *Service) Get(pathURL ...string) *Service {
+	return s.Method("GET", pathURL...)
 }
 
-// Delete sets the Service method to DELETE and sets the given pathURL.
-func (s *Service) Delete(pathURL string) *Service {
-	s.method = "DELETE"
-	return s.Path(pathURL)
+// Getf sets the Service method to GET and the path to the resolved path format.
+func (s *Service) Getf(format string, a ...interface{}) *Service {
+	return s.Get(fmt.Sprintf(format, a...))
+}
+
+// Post sets the Service method to POST and the path to the given pathURL.
+func (s *Service) Post(pathURL ...string) *Service {
+	return s.Method("POST", pathURL...)
+}
+
+// Postf sets the Service method to POST and the path to the resolved path format.
+func (s *Service) Postf(format string, a ...interface{}) *Service {
+	return s.Post(fmt.Sprintf(format, a...))
+}
+
+// Put sets the Service method to PUT and the path to the given pathURL.
+func (s *Service) Put(pathURL ...string) *Service {
+	return s.Method("PUT", pathURL...)
+}
+
+// Putf sets the Service method to PUT and the path to the resolved path format.
+func (s *Service) Putf(format string, a ...interface{}) *Service {
+	return s.Put(fmt.Sprintf(format, a...))
+}
+
+// Patch sets the Service method to PATCH and the path to the given pathURL.
+func (s *Service) Patch(pathURL ...string) *Service {
+	return s.Method("PATCH", pathURL...)
+}
+
+// Patchf sets the Service method to PATCH and the path to the resolved path format.
+func (s *Service) Patchf(format string, a ...interface{}) *Service {
+	return s.Patch(fmt.Sprintf(format, a...))
+}
+
+// Delete sets the Service method to DELETE and the path to the given pathURL.
+func (s *Service) Delete(pathURL ...string) *Service {
+	return s.Method("DELETE", pathURL...)
+}
+
+// Deletef sets the Service method to DELETE and the path to the resolved path format.
+func (s *Service) Deletef(format string, a ...interface{}) *Service {
+	return s.Delete(fmt.Sprintf(format, a...))
 }
 
 // Header

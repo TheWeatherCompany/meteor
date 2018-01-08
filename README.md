@@ -362,7 +362,7 @@ Coming soon to an IBM place near you...
 
 Many client libraries follow the lead of [google/go-github](https://github.com/google/go-github) (our inspiration!), but do so by reimplementing logic common to all clients.
 
-[Meteor](https://github.com/dghubble/meteor) borrowed and abstracted those ideas into an agnostic component any API client can use for creating and sending requests. Due to massive refactoring and additional requirements, we decided to fork Meteor and create a new custom Go HTTP client library for The Weather Company, an IBM Business.
+[Meteor](https://github.com/dghubble/meteor) borrowed and abstracted those ideas into an agnostic component any API client can use for creating and sending requests. Due to massive refactoring and additional requirements, we decided to fork [Sling](https://github.com/dghubble/sling) and create a new custom Go HTTP client library for The Weather Company, an IBM Business.
 
 ## Contributing
 

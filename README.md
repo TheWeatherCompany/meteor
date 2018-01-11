@@ -8,12 +8,19 @@ Meteor stores HTTP Request properties to simplify sending requests and decoding 
 
 * Method Setters: Get/Post/Put/Patch/Delete/Head
 * Add or Set Request Headers
-* Base/Path: Extend a Meteor for different endpoints
+* Manipulate the URL string quickly & easily
 * Encode structs into URL query parameters
-* Encode a form or JSON into the Request Body
-* Add response checkers for early returns
-* Receive JSON success and/or failure responses
-* Receive Binary success responses (optionally with JSON failure responses)
+* Use a Body Provider for Request body manipuation:
+  * Encode a raw string
+  * Encode a form
+  * Encode JSON
+  * Create your own body provider!
+* Use a response providers (Responder) for response manipulation:
+  * Receive JSON success and/or failure responses
+  * Receive Binary success responses (optionally with JSON failure responses)
+  * Create your own!
+* Make the requests _*asynchronously*_.
+* Reuses the connection for faster subsequent calls.
 
 ## Install
 

@@ -37,7 +37,7 @@ type Params struct {
 }
 
 params := &Params{APIKey: "mykey"}
-req, err := Meteor.New().Get("https://example.com").QueryStruct(params).Request()
+req, err := meteor.New().Get("https://example.com").QueryStruct(params).Request()
 ```
 
 ### Base
@@ -48,16 +48,16 @@ Use `Base` to create the base subdomain.domain.tld of the URL. Base will always 
 
 ```go
 // These create a GET request to https://example.com/
-req, err := Meteor.New().Base("https://example.com")
-req, err := Meteor.New().Base("https://example.com/")
-req, err := Meteor.New().BaseRaw("https://example.com/")
+req, err := meteor.New().Base("https://example.com")
+req, err := meteor.New().Base("https://example.com/")
+req, err := meteor.New().BaseRaw("https://example.com/")
 ```
 
 #### `RawBase`
 
 ```go
 // creates a GET request to https://example.com
-req, err := Meteor.New().RawBase("https://example.com")
+req, err := meteor.New().RawBase("https://example.com")
 ```
 
 ### Path
@@ -69,21 +69,21 @@ Use `Path` or `Pathf` to append full paths or partial paths (with a trailing sla
 
 ```go
 // creates a GET request to https://example.com/foo/bar
-req, err := Meteor.New().Base("https://example.com/").Path("foo/").Path("bar").Request()
+req, err := meteor.New().Base("https://example.com/").Path("foo/").Path("bar").Request()
 
 // creates a GET request to https://example.com/bar
-req, err := Meteor.New().Base("https://example.com/").Path("foo/").Path("/bar").Request()
-req, err := Meteor.New().Base("https://example.com/").Path("foo").Path("/bar").Request()
+req, err := meteor.New().Base("https://example.com/").Path("foo/").Path("/bar").Request()
+req, err := meteor.New().Base("https://example.com/").Path("foo").Path("/bar").Request()
 
 // creates a GET request to https://example.com/foo/{dynamicPath1}/{dynamicPath2}
-req, err := Meteor.New().Base("https://example.com/").Pathf("foo/%v/%v", dynamicPath1, dynamicPath2).Request()
+req, err := meteor.New().Base("https://example.com/").Pathf("foo/%v/%v", dynamicPath1, dynamicPath2).Request()
 ```
 
 If the path does not have a trailing slash and another `Path` or `Pathf` is added, it will over-write the last part of the path.
 
 ```go
 // creates a GET request to https://example.com/foo/foobar
-req, err := Meteor.New().Base("https://example.com/").Path("foo/").Path("bar").Path("foobar").Request()
+req, err := meteor.New().Base("https://example.com/").Path("foo/").Path("bar").Path("foobar").Request()
 ```
 
 #### `ResetPath`
@@ -91,7 +91,7 @@ Use `ResetPath` to reset the path.
 
 ```go
 // both create a GET request to https://example.com/
-req, err := Meteor.New().Base("https://example.com/").PartialPath("foo").PartialPath("bar").ResetPath().Request()
+req, err := meteor.New().Base("https://example.com/").PartialPath("foo").PartialPath("bar").ResetPath().Request()
 ```
 
 #### `Extension`
@@ -99,15 +99,15 @@ Use `Extension` to add an extention to the path.
 
 ```go
 // both create a GET request to https://example.com/foo/bar.json
-req, err := Meteor.New().Base("https://example.com/").PartialPath("foo").PartialPath("bar").Extension("json").Request()
-req, err := Meteor.New().Base("https://example.com/").PartialPath("foo").PartialPath("bar").Extension(".json").Request()
+req, err := meteor.New().Base("https://example.com/").PartialPath("foo").PartialPath("bar").Extension("json").Request()
+req, err := meteor.New().Base("https://example.com/").PartialPath("foo").PartialPath("bar").Extension(".json").Request()
 ```
 
 All path methods can be used together.
 
 ```go
 // creates a GET request to https://example.com/foo/bar.json
-req, err := Meteor.New().Base("https://example.com/").PartialPath("foo").Path("bar.json").Request()
+req, err := meteor.New().Base("https://example.com/").PartialPath("foo").Path("bar.json").Request()
 ```
 
 ### Method
@@ -115,17 +115,17 @@ req, err := Meteor.New().Base("https://example.com/").PartialPath("foo").Path("b
 Use `Get`, `Post`, `Put`, `Patch`, `Delete`, or `Head` sets the appropriate HTTP method. `Method` allows you to set the HTTP Method. All allow you to set the path (like `Path`) _optionally_.
 
 ```go
-req, err := Meteor.New().Post("http://example.com/foo/bar")
-req, err := Meteor.New().Method("POST", "http://example.com/foo/bar")
-req, err := Meteor.New().Path("http://example.com/foo/bar").Post()
-req, err := Meteor.New().Base("http://example.com/").Path("foo/bar").Post()
+req, err := meteor.New().Post("http://example.com/foo/bar")
+req, err := meteor.New().Method("POST", "http://example.com/foo/bar")
+req, err := meteor.New().Path("http://example.com/foo/bar").Post()
+req, err := meteor.New().Base("http://example.com/").Path("foo/bar").Post()
 ```
 
 You can also use `Getf`, `Postf`, `Putf`, `Patchf`, `Deletef`, `Headf`, or `Methodf` to resolve a dynamic method.
 
 ```go
 // creates a GET request to https://example.com/foo/{dynamicPath1}/{dynamicPath2}
-req, err := Meteor.New().Base("https://example.com/").Postf("foo/%v/%v", dynamicPath1, dynamicPath2).Request()
+req, err := meteor.New().Base("https://example.com/").Postf("foo/%v/%v", dynamicPath1, dynamicPath2).Request()
 ```
 
 ### Headers
@@ -133,7 +133,7 @@ req, err := Meteor.New().Base("https://example.com/").Postf("foo/%v/%v", dynamic
 `Add` or `Set` headers for requests created by a Meteor.
 
 ```go
-s := Meteor.New().Base(baseUrl).Set("User-Agent", "Gophergram API Client")
+s := meteor.New().Base(baseUrl).Set("User-Agent", "Gophergram API Client")
 req, err := s.New().Get("gophergram/list").Request()
 ```
 

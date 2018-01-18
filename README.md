@@ -86,15 +86,6 @@ If the path does not have a trailing slash and another `Path` or `Pathf` is adde
 req, err := Meteor.New().Base("https://example.com/").Path("foo/").Path("bar").Path("foobar").Request()
 ```
 
-#### `PartialPath`/`PartialPathf`
-Use `PartialPath` or `PartialPathf` to set or extend the URL for created Requests.<br>**Note**: `PartialPath` and `PartialPathf` will always add a trailing slash. Adding a slash prefix will _not_ reset the path.
-
-```go
-// both create a GET request to https://example.com/foo/bar/
-req, err := Meteor.New().Base("https://example.com/").PartialPath("foo").PartialPath("bar").Request()
-req, err := Meteor.New().Base("https://example.com/").PartialPath("foo").PartialPath("/bar").Request()
-```
-
 #### `ResetPath`
 Use `ResetPath` to reset the path.
 
@@ -257,8 +248,6 @@ Recap: If you wish to *extend* a Meteor service, create a new child copy with `N
 
 ### Receiving
 
-#### Do
-
 #### Receive
 
 Define a JSON struct to decode a type from 2XX success responses. Use `ReceiveSuccess(successV interface{})` to send a new Request and decode the response body into `successV` if it succeeds.
@@ -304,7 +293,43 @@ Pass a nil `successV` or `failureV` argument to skip JSON decoding into that val
 
 #### Do
 
-Meteor has two Do methods: `Do` and `DoAsync`.
+Meteor has two Do methods: `Do` and `DoAsync`. `Do`/`DoAsync` sends an HTTP request and returns the response. After the receiving the response, it calls the appropriate Responder and return a raw Response and error.
+
+`Do` can be called with or without a request parameter. For example, considering this setup:
+```go
+var sResp dailyforecast.DailyForecastResponse
+v1Base := GetService().New().Base(sunV1API).Client(nil)
+
+dailyForecastMeteor := v1Base.New().Pathf("geocode/%v/%v", "34.063", "-84.217").Pathf("forecast/daily/%vday.json", 3).Get().QueryStruct(&Params{
+		Key: meteorService.GetCredBy("sun"),
+		Language: "en-US",
+		Units: "e",
+	}).Responder(meteor.JSONSuccessResponder(&sRespe))
+```
+
+You could call `Do` with `Request()` (if you would like to further modify the request before doing the API or do some additional error handling):
+```go
+req, err := dailyForecastMeteor.Request()
+if err != nil {
+	// Do something
+}
+dailyForecastMeteor.Do(req)
+```
+
+Or, solo:
+```go
+dailyForecastMeteor.Do()
+```
+
+##### DoAsync
+
+Additionally, you could call various APIs using `DoAsync`. For example, say you have an API that returns various IDs for an additional API. For example, you could do something like this:
+
+```go
+import "github.ibm.com/TheWeatherCompany/cumulus"
+
+```
+
 
 ### Modify a Request
 

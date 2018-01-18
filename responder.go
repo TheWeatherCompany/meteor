@@ -4,6 +4,7 @@ package meteor
 
 import (
 	"net/http"
+	"sync"
 )
 
 // ResponseProvider provides a modifier for the response.
@@ -16,6 +17,8 @@ type Responder interface {
 
 // responder
 type responder struct {
+	//mu       sync.Mutex
+	mu       sync.RWMutex
 	Request  *http.Request
 	Response *http.Response
 	Error    error
@@ -23,9 +26,11 @@ type responder struct {
 	Success  interface{}
 }
 
-
 // Respond creates the proper response object.
 func (r *responder) Respond(req *http.Request, resp *http.Response, err error) Responder {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	r.Request = req
 	r.Response = resp
 	r.Error = err
@@ -35,16 +40,21 @@ func (r *responder) Respond(req *http.Request, resp *http.Response, err error) R
 
 // DoResponse does the actual response.
 func (r *responder) DoResponse() (*http.Response, error) {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	return r.Response, r.Error
 }
 
 // GetSuccess gets the success struct.
 func (r *responder) GetSuccess() interface{} {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	return r.Success
 }
 
 // GetFailure gets the failure struct.
 func (r *responder) GetFailure() interface{} {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	return r.Failure
 }
-

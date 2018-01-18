@@ -28,6 +28,9 @@ type jsonResponder responder
 
 // Respond creates the proper response object.
 func (r *jsonResponder) Respond(req *http.Request, resp *http.Response, err error) Responder {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	r.Request = req
 	r.Response = resp
 	r.Error = err
@@ -37,19 +40,28 @@ func (r *jsonResponder) Respond(req *http.Request, resp *http.Response, err erro
 
 // DoResponse does the actual response decoding from json.
 func (r *jsonResponder) DoResponse() (*http.Response, error) {
-	if r.Success != nil || r.Failure != nil {
+	if r.GetSuccess() != nil || r.GetFailure() != nil {
+		r.mu.Lock()
 		r.Error = decodeResponseJSON(r.Response, r.Success, r.Failure)
+		r.mu.Unlock()
 	}
+
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	return r.Response, r.Error
 }
 
 // GetSuccess gets the success struct.
 func (r *jsonResponder) GetSuccess() interface{} {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	return r.Success
 }
 
 // GetFailure gets the failure struct.
 func (r *jsonResponder) GetFailure() interface{} {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
 	return r.Failure
 }
 

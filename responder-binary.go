@@ -26,6 +26,9 @@ type binaryResponder responder
 
 // Respond creates the proper response object.
 func (r *binaryResponder) Respond(req *http.Request, resp *http.Response, err error) Responder {
+	r.mu.Lock()
+	defer r.mu.Unlock()
+
 	r.Request = req
 	r.Response = resp
 	r.Error = err
@@ -35,7 +38,11 @@ func (r *binaryResponder) Respond(req *http.Request, resp *http.Response, err er
 
 // DoResponse does the actual response falling back on JSONResponse for errors.
 func (r *binaryResponder) DoResponse() (*http.Response, error) {
-	defer r.Response.Body.Close()
+	r.mu.Lock()
+	defer func(br *binaryResponder) {
+		br.Response.Body.Close()
+		br.mu.Unlock()
+	}(r)
 
 	if isOk(r.Response.StatusCode) {
 		r.Success, r.Error = ioutil.ReadAll(r.Response.Body)
@@ -48,10 +55,16 @@ func (r *binaryResponder) DoResponse() (*http.Response, error) {
 
 // GetSuccess gets the success struct.
 func (r *binaryResponder) GetSuccess() interface{} {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	return r.Success
 }
 
 // GetFailure gets the failure struct.
 func (r *binaryResponder) GetFailure() interface{} {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+
 	return r.Failure
 }

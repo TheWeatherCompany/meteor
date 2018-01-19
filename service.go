@@ -651,6 +651,7 @@ func isOk(statusCode int) bool {
 	return http.StatusOK <= statusCode && statusCode <= 299
 }
 
+// GetDefaultClient gets a default client with a timeout of HTTPTimeout.
 func GetDefaultClient() *http.Client {
 	return &http.Client{
 		Timeout: HTTPTimeout,

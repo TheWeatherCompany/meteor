@@ -11,13 +11,14 @@ import (
 	"fmt"
 	"errors"
 	"time"
+	"net"
 
 	goquery "github.com/google/go-querystring/query"
 )
 
 const (
 	contentType = "Content-Type"
-	HTTPTimeout = 15 * time.Second
+	HTTPTimeout = 5 * time.Second
 )
 
 // Doer executes http requests.  It is implemented by *http.Client.
@@ -653,7 +654,14 @@ func isOk(statusCode int) bool {
 
 // GetDefaultClient gets a default client with a timeout of HTTPTimeout.
 func GetDefaultClient() *http.Client {
+	var netTransport = &http.Transport{
+		Dial: (&net.Dialer{
+			Timeout: HTTPTimeout,
+		}).Dial,
+		TLSHandshakeTimeout: HTTPTimeout,
+	}
 	return &http.Client{
-		Timeout: HTTPTimeout,
+		Timeout:   HTTPTimeout * 2,
+		Transport: netTransport,
 	}
 }

@@ -17,8 +17,9 @@ import (
 )
 
 const (
-	contentType = "Content-Type"
-	HTTPTimeout = 5 * time.Second
+	contentType          = "Content-Type"
+	HTTPTimeout          = 15 * time.Second
+	HTTPTransportTimeout = 5 * time.Second
 )
 
 // Doer executes http requests.  It is implemented by *http.Client.
@@ -656,12 +657,12 @@ func isOk(statusCode int) bool {
 func GetDefaultClient() *http.Client {
 	var netTransport = &http.Transport{
 		Dial: (&net.Dialer{
-			Timeout: HTTPTimeout,
+			Timeout: HTTPTransportTimeout,
 		}).Dial,
-		TLSHandshakeTimeout: HTTPTimeout,
+		TLSHandshakeTimeout: HTTPTransportTimeout,
 	}
 	return &http.Client{
-		Timeout:   HTTPTimeout * 2,
+		Timeout:   HTTPTimeout,
 		Transport: netTransport,
 	}
 }

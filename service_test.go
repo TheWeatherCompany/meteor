@@ -70,8 +70,8 @@ const (
 func TestNew(t *testing.T) {
 	got := New()
 
-	if got.httpClient != http.DefaultClient {
-		t.Errorf("expected %v, got %v", http.DefaultClient, got.httpClient)
+	if got.httpClient != GetDefaultClient() {
+		t.Errorf("expected %v, got %v", GetDefaultClient(), got.httpClient)
 	}
 	if got.header == nil {
 		t.Errorf("Header map not initialized with make")
@@ -161,8 +161,8 @@ func TestService_Reset(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			got := tt.s.Reset()
-			if !assert.Equal(t, http.DefaultClient, got.httpClient) {
-				t.Errorf("%v Service.Reset() = %v, want %v", tt.name, got.httpClient, http.DefaultClient)
+			if !assert.Equal(t, GetDefaultClient(), got.httpClient) {
+				t.Errorf("%v Service.Reset() = %v, want %v", tt.name, got.httpClient, GetDefaultClient())
 			}
 			if !assert.Equal(t, "GET", got.method) {
 				t.Errorf("%v Service.Reset() = %v, want %v", tt.name, got.method, "GET")
@@ -197,11 +197,11 @@ func TestService_Client(t *testing.T) {
 		want *http.Client
 	}{
 		// nil should set our default client
-		{"nil", New(), args{nil}, http.DefaultClient},
+		{"nil", New(), args{nil}, GetDefaultClient()},
 		// empty should set the GoLang default client
-		{"empty", New(), args{&http.Client{}}, http.DefaultClient},
+		{"empty", New(), args{&http.Client{}}, GetDefaultClient()},
 		// custom clients should be set
-		{"default", New(), args{http.DefaultClient}, http.DefaultClient},
+		{"default", New(), args{GetDefaultClient()}, GetDefaultClient()},
 		{"custom", New(), args{customClient}, customClient},
 	}
 	for _, tt := range tests {
@@ -224,11 +224,11 @@ func TestService_Doer(t *testing.T) {
 		want Doer
 	}{
 		// nil should set our default client
-		{"nil", New(), args{nil}, http.DefaultClient},
+		{"nil", New(), args{nil}, GetDefaultClient()},
 		// empty should set the GoLang default client
-		{"empty", New(), args{&http.Client{}}, http.DefaultClient},
+		{"empty", New(), args{&http.Client{}}, GetDefaultClient()},
 		// custom clients should be set
-		{"default", New(), args{http.DefaultClient}, http.DefaultClient},
+		{"default", New(), args{GetDefaultClient()}, GetDefaultClient()},
 		{"custom", New(), args{customClient}, customClient},
 	}
 	for _, tt := range tests {
@@ -1345,7 +1345,7 @@ func TestService_JSONResponder(t *testing.T) {
 		//{"SuccessStructOnly-badSuccess", New(), successBadHandler, args{newSuccess(), nil}, want{JSONResponder(newSuccess(), nil), true, newSuccess(), nil}},
 		//{"SuccessStructOnly-badFailure", New(), failureBadHandler, args{newSuccess(), nil}, want{JSONResponder(newSuccess(), nil), true, newSuccess(), nil}},
 
-		{"FailureStructOnly-succes", New(), successHandler, args{nil, newFail()}, want{JSONResponder(nil, newFail()), false, nil, wantedFailure}},
+		{"FailureStructOnly-success", New(), successHandler, args{nil, newFail()}, want{JSONResponder(nil, newFail()), false, nil, wantedFailure}},
 		{"FailureStructOnly-success204", New(), success204Handler, args{nil, newFail()}, want{JSONResponder(nil, newFail()), false, nil, wantedFailure}},
 		{"FailureStructOnly-failure", New(), failureHandler, args{nil, newFail()}, want{JSONResponder(nil, newFail()), false, nil, wantedFailure}},
 
@@ -1619,6 +1619,7 @@ func TestService_Request(t *testing.T) {
 			req, err := http.NewRequest("GET", "", nil)
 			return want{req, err != nil}
 		}()},
+		{"err", svc.New().BodyJSON(http.Request{}), want{nil, true}},
 		{"rawBase", svc.RawBase(baseURL).New(), func() want {
 			req, err := http.NewRequest("GET", baseURL, nil)
 			return want{req, err != nil}
@@ -1655,6 +1656,9 @@ func TestService_Request(t *testing.T) {
 				t.Errorf("%v Service.Request() error = %v, wantErr %v", tt.name, err, tt.want.err)
 				return
 			}
+			//if tt.want.err && (err != nil) {
+			//	return
+			//}
 			if !assert.Equal(t, tt.want.req.URL, got.URL) {
 				t.Errorf("%v.URL Service.Request() = %v, want %v", tt.name, got.URL, tt.want.req.URL)
 			}
@@ -2046,7 +2050,9 @@ func TestService_DoAsync(t *testing.T) {
 	svc.Responder(respondr)
 
 	r, e := svc.Request()
-	reqs := []AsyncDoer{&AsyncRequest{responder: respondr, Request: r, Error: e, service: svc}, &AsyncRequest{responder: respondr, Request: r, Error: e, service: svc}}
+	reqs := NewAsyncDoers(&AsyncRequest{responder: respondr, Request: r, Error: e, service: svc}, &AsyncRequest{responder: respondr, Request: r, Error: e, service: svc})
+	//reqs := NewAsyncDoers([]AsyncRequest{&AsyncRequest{responder: respondr, Request: r, Error: e, service: svc}, &AsyncRequest{responder: respondr, Request: r, Error: e, service: svc}})
+	//reqs := []AsyncDoer{&AsyncRequest{responder: respondr, Request: r, Error: e, service: svc}, &AsyncRequest{responder: respondr, Request: r, Error: e, service: svc}}
 	//reqs := []AsyncRequest{{responder: respondr, Request: r, Error: e}, {responder: respondr, Request: r, Error: e}}
 
 	httpmock.Activate()

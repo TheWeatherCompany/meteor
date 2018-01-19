@@ -9,12 +9,15 @@ import (
 	"reflect"
 	"strings"
 	"fmt"
+	"errors"
+	"time"
 
 	goquery "github.com/google/go-querystring/query"
 )
 
 const (
 	contentType = "Content-Type"
+	HTTPTimeout = 15 * time.Second
 )
 
 // Doer executes http requests.  It is implemented by *http.Client.
@@ -52,7 +55,7 @@ type Service struct {
 // New returns a new Service with an http DefaultClient.
 func New() *Service {
 	return &Service{
-		httpClient:   http.DefaultClient,
+		httpClient:   GetDefaultClient(),
 		method:       "GET",
 		header:       make(http.Header),
 		queryStructs: make([]interface{}, 0),
@@ -91,7 +94,7 @@ func (s *Service) New() *Service {
 
 // Reset resets the service entirely.
 func (s *Service) Reset() *Service {
-	s.httpClient = http.DefaultClient
+	s.httpClient = GetDefaultClient()
 	s.method = "GET"
 	s.rawURL = ""
 	s.bodyProvider = nil
@@ -105,19 +108,19 @@ func (s *Service) Reset() *Service {
 // Http Client
 
 // Service sets the http Service used to do requests. If a nil client is given,
-// the http.DefaultClient will be used.
+// the GetDefaultClient() will be used.
 func (s *Service) Client(httpClient *http.Client) *Service {
 	if httpClient == nil {
-		return s.Doer(http.DefaultClient)
+		return s.Doer(GetDefaultClient())
 	}
 	return s.Doer(httpClient)
 }
 
 // Doer sets the custom Doer implementation used to do requests.
-// If a nil client is given, the http.DefaultClient will be used.
+// If a nil client is given, the GetDefaultClient() will be used.
 func (s *Service) Doer(doer Doer) *Service {
 	if doer == nil {
-		s.httpClient = http.DefaultClient
+		s.httpClient = GetDefaultClient()
 	} else {
 		s.httpClient = doer
 	}
@@ -458,7 +461,24 @@ func (s *Service) BinarySuccessResponder() *Service {
 // Request returns a new http.Request created with the Service properties.
 // Returns any errors parsing the rawURL, encoding query structs, encoding
 // the body, or creating the http.Request.
-func (s *Service) Request() (*http.Request, error) {
+func (s *Service) Request() (req *http.Request, err error) {
+	defer func() {
+		if r := recover(); r != nil {
+			// find out exactly what the error was and set err
+			switch x := r.(type) {
+			case string:
+				err = errors.New(x)
+			case error:
+				err = x
+			default:
+				err = errors.New("Unknown panic")
+			}
+			// invalidate req
+			req = nil
+			// return the modified err and req
+		}
+	}()
+
 	reqURL, err := url.Parse(s.rawURL)
 	if err != nil {
 		return nil, err
@@ -476,7 +496,7 @@ func (s *Service) Request() (*http.Request, error) {
 			return nil, err
 		}
 	}
-	req, err := http.NewRequest(s.method, reqURL.String(), body)
+	req, err = http.NewRequest(s.method, reqURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
@@ -579,9 +599,9 @@ func (s *Service) GetFailure() interface{} {
 // Sending
 
 // Do sends an HTTP request and returns the response. After the receiving the response,
-// this function cycles through the various response checkers to short-circuit the
-// Responder and return a raw Response and error. After checking the response, it will
-// response with the appropriate Responder.
+// this function calls the appropriate Responder and return a raw Response and error.
+// request is an optional parameter and Do will only accept one request param, even though
+// it is a vardiac parameter.
 func (s *Service) Do(request ...*http.Request) (*http.Response, error) {
 	var req *http.Request
 	if len(request) == 0 || (len(request) == 1 && request[0] == nil) {
@@ -629,4 +649,10 @@ func (s *Service) DoAsync(reqs []AsyncDoer) []*AsyncResponse {
 // isOk determines whether the HTTP Status Code is an OK Code (200-299)
 func isOk(statusCode int) bool {
 	return http.StatusOK <= statusCode && statusCode <= 299
+}
+
+func GetDefaultClient() *http.Client {
+	return &http.Client{
+		Timeout: HTTPTimeout,
+	}
 }

@@ -6,6 +6,7 @@ import (
 	"reflect"
 	"testing"
 	"time"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -21,7 +22,7 @@ var (
 			TLSHandshakeTimeout: 5 * time.Second,
 		},
 	}
-	defaultClient = http.DefaultClient
+	defaultClient = GetDefaultClient()
 )
 
 func TestNewCredentials(t *testing.T) {
@@ -101,11 +102,11 @@ func TestNewMeteor(t *testing.T) {
 	}{
 		// Uses default client
 		{"new", args{credentials: credentials}, &Meteor{
-			httpClient:  http.DefaultClient,
+			httpClient:  GetDefaultClient(),
 			credentials: credentials,
 			UserAgent:   UserAgent,
-			Common:      &Service{
-				httpClient:   http.DefaultClient,
+			Common: &Service{
+				httpClient:   GetDefaultClient(),
 				method:       "GET",
 				header:       make(http.Header),
 				queryStructs: make([]interface{}, 0),
@@ -118,7 +119,7 @@ func TestNewMeteor(t *testing.T) {
 			httpClient:  customClient,
 			credentials: credentials,
 			UserAgent:   UserAgent,
-			Common:      &Service{
+			Common: &Service{
 				httpClient:   customClient,
 				method:       "GET",
 				header:       make(http.Header),
@@ -128,11 +129,11 @@ func TestNewMeteor(t *testing.T) {
 		}},
 
 		// uses only the first client given since multiple clients are not supported
-		{"newWithClients", args{credentials, []*http.Client{customClient, http.DefaultClient}}, &Meteor{
+		{"newWithClients", args{credentials, []*http.Client{customClient, GetDefaultClient()}}, &Meteor{
 			httpClient:  customClient,
 			credentials: credentials,
 			UserAgent:   UserAgent,
-			Common:      &Service{
+			Common: &Service{
 				httpClient:   customClient,
 				method:       "GET",
 				header:       make(http.Header),

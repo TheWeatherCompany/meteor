@@ -69,7 +69,7 @@ func TestBodyProviderInterface(t *testing.T) {
 		},
 	}
 
-	m := New().Client(http.DefaultClient)
+	m := New().Client(GetDefaultClient())
 	req, _ := m.New().Base("http://example.com").BodyProvider(mockedBodyProvider).Request()
 	handler := func(w http.ResponseWriter, r *http.Request) {
 		w.Header().Set("Content-Type", mockedBodyProvider.ContentType())

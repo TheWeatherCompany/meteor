@@ -57,7 +57,7 @@ func (c *Meteor) GetHTTPClient() *http.Client {
 func NewMeteor(credentials Credentials, httpClient ...*http.Client) *Meteor {
 	var theClient *http.Client
 	if httpClient == nil || len(httpClient) == 0 || (len(httpClient) == 1 && httpClient[0] == nil) {
-		theClient = http.DefaultClient
+		theClient = GetDefaultClient()
 	} else {
 		theClient = httpClient[0]
 	}

@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/joho/godotenv"
-	"github.ibm.com/TheWeatherCompany/meteor"
+	"github.com/TheWeatherCompany/meteor"
 	"github.ibm.com/TheWeatherCompany/wxapi/apis/sun/v1/forecast/daily"
 	"github.ibm.com/TheWeatherCompany/wxapi/apis/sun/v3/alerts"
 	"github.ibm.com/TheWeatherCompany/wxgo/types/cms"
@@ -58,7 +58,7 @@ func doDailyForecast() {
 	var sResp1 dailyforecast.DailyForecastResponse
 	v1Base := GetService().New().Base(sunV1API).Client(nil)
 
-	dailyForecastMeteor := v1Base.New().PartialPathf("geocode/%v/%v", "34.063", "-84.217").Pathf("forecast/daily/%vday.json", 3).Get().QueryStruct(&Params{
+	dailyForecastMeteor := v1Base.New().Pathf("geocode/%v/%v", "34.063", "-84.217").Pathf("forecast/daily/%vday.json", 3).Get().QueryStruct(&Params{
 		Key: meteorService.GetCredBy("sun"),
 		Language: "en-US",
 		Units: "e",
@@ -100,7 +100,7 @@ func doBreakingNow() {
 	req, _ := breakingNowMeteor.Request()
 	fmt.Printf("%v\n", req.URL.String())
 
-	breakingNowMeteor.DoRaw(req)
+	breakingNowMeteor.Do(req)
 	fmt.Printf("%#v\n", sResp3)
 }
 

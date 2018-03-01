@@ -12,19 +12,36 @@ import (
 func JSONSuccessResponder(success interface{}) *jsonResponder {
 	return &jsonResponder{
 		Success: success,
+		isOk: isOk,
 	}
 }
 
 // JSONResponder creates a json response with Failure and Success.
-func JSONResponder(success, failure interface{}) *jsonResponder {
-	return &jsonResponder{
+func JSONResponder(success, failure interface{}, isOKfn ...func(int, *http.Response) bool) *jsonResponder {
+	jr := &jsonResponder{
 		Failure: failure,
 		Success: success,
+		isOk: isOk,
 	}
+
+	if len(isOKfn) > 0 {
+		jr.isOk = isOKfn[0]
+	}
+
+	return jr
 }
 
 // jsonResponder
 type jsonResponder responder
+
+// isOk determines whether the HTTP Status Code is an OK Code (200-299)
+// Uses isOK
+func (r *jsonResponder) IsOK(statusCode int, resp *http.Response) bool {
+	if r.isOk != nil {
+		return r.isOk(statusCode, resp)
+	}
+	return isOk(statusCode, resp)
+}
 
 // Respond creates the proper response object.
 func (r *jsonResponder) Respond(req *http.Request, resp *http.Response, err error) Responder {
@@ -42,13 +59,18 @@ func (r *jsonResponder) Respond(req *http.Request, resp *http.Response, err erro
 func (r *jsonResponder) DoResponse() (*http.Response, error) {
 	if r.GetSuccess() != nil || r.GetFailure() != nil {
 		r.mu.Lock()
-		r.Error = decodeResponseJSON(r.Response, r.Success, r.Failure)
+		r.Error = decodeResponseJSON(r.IsOK, r.Response, r.Success, r.Failure)
 		r.mu.Unlock()
 	}
 
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.Response, r.Error
+}
+
+// GetResponse gets the http response.
+func (r *jsonResponder) GetResponse() *http.Response {
+	return r.Response
 }
 
 // GetSuccess gets the success struct.
@@ -65,14 +87,20 @@ func (r *jsonResponder) GetFailure() interface{} {
 	return r.Failure
 }
 
+// GetError gets the error field.
+func (r *jsonResponder) GetError() error {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	return r.Error
+}
 
 // decodeResponse decodes response Body into the value pointed to by successV
 // if the response is a success (2XX) or into the value pointed to by failureV
 // otherwise. If the successV or failureV argument to decode into is nil,
-// decoding is skipped.
+// decodig is skipped.
 // Caller is responsible for closing the resp.Body.
-func decodeResponseJSON(resp *http.Response, successV, failureV interface{}) (err error) {
-	if isOk(resp.StatusCode) && successV != nil {
+func decodeResponseJSON(okFn func(int, *http.Response) bool, resp *http.Response, successV, failureV interface{}) (err error) {
+	if okFn(resp.StatusCode, resp) && successV != nil {
 		err = decodeResponseBodyJSON(resp, successV)
 		if err != nil {
 			successV, err = ioutil.ReadAll(resp.Body)
@@ -102,4 +130,3 @@ func decodeResponseBodyJSON(resp *http.Response, v interface{}) (err error) {
 	}
 	return err
 }
-

@@ -11,19 +11,31 @@ import (
 type Responder interface {
 	Respond(*http.Request, *http.Response, error) (Responder)
 	DoResponse() (*http.Response, error)
+	GetResponse() *http.Response
 	GetSuccess() interface{}
 	GetFailure() interface{}
+	IsOK(int, *http.Response) bool
+	GetError() error
 }
 
 // responder
 type responder struct {
-	//mu       sync.Mutex
+	isOk     func(int, *http.Response) bool
 	mu       sync.RWMutex
 	Request  *http.Request
 	Response *http.Response
 	Error    error
 	Failure  interface{}
 	Success  interface{}
+}
+
+// isOk determines whether the HTTP Status Code is an OK Code (200-299)
+// Uses isOK
+func (r *responder) IsOK(statusCode int, resp *http.Response) bool {
+	if r.isOk != nil {
+		return r.isOk(statusCode, resp)
+	}
+	return isOk(statusCode, resp)
 }
 
 // Respond creates the proper response object.
@@ -45,6 +57,11 @@ func (r *responder) DoResponse() (*http.Response, error) {
 	return r.Response, r.Error
 }
 
+// GetResponse gets the http response.
+func (r *responder) GetResponse() *http.Response {
+	return r.Response
+}
+
 // GetSuccess gets the success struct.
 func (r *responder) GetSuccess() interface{} {
 	r.mu.RLock()
@@ -57,4 +74,11 @@ func (r *responder) GetFailure() interface{} {
 	r.mu.RLock()
 	defer r.mu.RUnlock()
 	return r.Failure
+}
+
+// GetError gets the error field.
+func (r *responder) GetError() error {
+	r.mu.RLock()
+	defer r.mu.RUnlock()
+	return r.Error
 }

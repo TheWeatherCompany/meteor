@@ -11,15 +11,14 @@ import (
 	"fmt"
 	"errors"
 	"time"
-	"net"
 
 	goquery "github.com/google/go-querystring/query"
 )
 
 const (
-	contentType          = "Content-Type"
-	HTTPTimeout          = 15 * time.Second
-	HTTPTransportTimeout = 5 * time.Second
+	contentType = "Content-Type"
+	HTTPTimeout = 15 * time.Second
+	NBytes      = 512
 )
 
 // Doer executes http requests.  It is implemented by *http.Client.
@@ -447,14 +446,20 @@ func (s *Service) JSONSuccessResponder(success interface{}) *Service {
 }
 
 // BinaryResponder sets the Service's responder to handle a binary response.
-func (s *Service) BinaryResponder(failure interface{}) *Service {
-	s.responder = BinaryResponder(failure)
+func (s *Service) BinaryResponder(failure interface{}, isOKfn ...func(int, *http.Response) bool) *Service {
+	s.responder = BinaryResponder(failure, isOKfn...)
 	return s
 }
 
 // BinarySuccessResponder sets the Service's responder to handle a binary response for success only.
 func (s *Service) BinarySuccessResponder() *Service {
 	s.responder = BinarySuccessResponder()
+	return s
+}
+
+// BinarySuccessResponder sets the Service's responder to handle a binary response for success only.
+func (s *Service) BinaryFailureResponder(failure interface{}) *Service {
+	s.responder = BinaryFailureResponder(failure)
 	return s
 }
 
@@ -498,11 +503,20 @@ func (s *Service) Request() (req *http.Request, err error) {
 			return nil, err
 		}
 	}
+
+	//ctx, cancel := context.WithCancel(context.TODO())
+	//timer := time.AfterFunc(5*time.Second, func() {
+	//	cancel()
+	//})
+
+	fmt.Printf("URL: %v\n", reqURL.String())
 	req, err = http.NewRequest(s.method, reqURL.String(), body)
 	if err != nil {
 		return nil, err
 	}
 	addHeaders(req, s.header)
+
+	//req = req.WithContext(ctx)
 	return req, err
 }
 
@@ -607,6 +621,7 @@ func (s *Service) GetFailure() interface{} {
 func (s *Service) Do(request ...*http.Request) (*http.Response, error) {
 	var req *http.Request
 	if len(request) == 0 || (len(request) == 1 && request[0] == nil) {
+		fmt.Println("Request")
 		var err error
 		req, err = s.Request()
 		if err != nil {
@@ -625,7 +640,7 @@ func (s *Service) Do(request ...*http.Request) (*http.Response, error) {
 
 	defer func() {
 		if resp.Header.Get("Accept-Ranges") != "bytes" {
-			io.CopyN(ioutil.Discard, resp.Body, 512)
+			io.CopyN(ioutil.Discard, resp.Body, NBytes)
 		}
 		resp.Body.Close()
 	}()
@@ -649,20 +664,13 @@ func (s *Service) DoAsync(reqs []AsyncDoer) []*AsyncResponse {
 }
 
 // isOk determines whether the HTTP Status Code is an OK Code (200-299)
-func isOk(statusCode int) bool {
+func isOk(statusCode int, resp *http.Response) bool {
 	return http.StatusOK <= statusCode && statusCode <= 299
 }
 
 // GetDefaultClient gets a default client with a timeout of HTTPTimeout.
 func GetDefaultClient() *http.Client {
-	var netTransport = &http.Transport{
-		Dial: (&net.Dialer{
-			Timeout: HTTPTransportTimeout,
-		}).Dial,
-		TLSHandshakeTimeout: HTTPTransportTimeout,
-	}
 	return &http.Client{
-		Timeout:   HTTPTimeout,
-		Transport: netTransport,
+		Timeout: HTTPTimeout,
 	}
 }

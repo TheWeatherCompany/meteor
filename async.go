@@ -4,90 +4,6 @@ package meteor
 
 import "net/http"
 
-//type async struct {
-//	service   *Service
-//	requests  []AsyncRequest
-//	responses []*AsyncResponse
-//	ch        chan *AsyncResponse
-//	stopCh    chan struct{}
-//	toStop    chan string
-//	closed    bool
-//	stoppedBy string
-//}
-//
-//func (a *async) do(req AsyncRequest) {
-//	select {
-//	case <- a.stopCh:
-//		return
-//	default:
-//	}
-//
-//	resp, err := a.service.Responder(req.responder).Do(req.Request)
-//	value := &AsyncResponse{
-//		responder: a.service.responder,
-//		Response:  resp,
-//		//Success:   s.responder.GetSuccess(),
-//		//Failure:   s.responder.GetFailure(),
-//		Error: err,
-//	}
-//
-//	select {
-//	case <- a.stopCh:
-//		return
-//	case a.ch <- value:
-//	}
-//}
-//
-//func (a *async) Do() []*AsyncResponse {
-//	for i, req := range a.requests {
-//		go a.do(req)
-//	}
-//
-//	for {
-//		select {
-//		case <- a.stopCh:
-//			return a.responses
-//		default:
-//		}
-//
-//		select {
-//		case <- a.stopCh:
-//			return a.responses
-//		case r := <-a.ch:
-//			a.responses = append(a.responses, r)
-//			if len(a.responses) == len(a.requests) {
-//				select {
-//				case a.toStop <- "stopped":
-//				default:
-//				}
-//				return a.responses
-//			}
-//		}
-//	}
-//}
-//
-//func newAsync(service *Service, reqs []AsyncRequest, length ...int) *async {
-//	var l int
-//	if len(length) == 0 || (len(length) == 1 && length[0] == 0) {
-//		l = len(reqs)
-//	} else {
-//		l = length[0]
-//	}
-//
-//	a := &async{
-//		service:   service,
-//		requests:  reqs,
-//		responses: make([]*AsyncResponse, 0),
-//		ch:        make(chan *AsyncResponse, l),
-//		stopCh:    make(chan struct{}),
-//		toStop:    make(chan string, 1),
-//		closed:    false,
-//		length:    l,
-//	}
-//	go a.Moderator()
-//	return a
-//}moq -out
-
 // AsyncDoer does the work for an async job/task
 // for use by async
 type AsyncDoer interface {
@@ -103,6 +19,11 @@ type AsyncDoer interface {
 	// Returning an empty string will not stop the channel.
 	// Returning a string will record on the async struct.
 	ToStop() string
+}
+
+// NewAsyncDoers is a nice wrapper for creating AsyncDoer slice.
+func NewAsyncDoers(doers ...AsyncDoer) []AsyncDoer {
+	return doers
 }
 
 // async
@@ -128,6 +49,13 @@ func (a *async) Moderator() {
 	a.StoppedBy = <-a.toStop
 	close(a.stopCh)
 	a.closed = true
+}
+
+// Restart restarts the toStop channel.
+func (a *async) Restart() {
+	a.closed = false
+	a.toStop = make(chan string, 1)
+	go a.Moderator()
 }
 
 // do does the work of the job/task by calling the AsyncDoer methods
@@ -319,3 +247,86 @@ func (ar *AsyncResponse) GetError() error {
 	return ar.Error
 }
 
+//type async struct {
+//	service   *Service
+//	requests  []AsyncRequest
+//	responses []*AsyncResponse
+//	ch        chan *AsyncResponse
+//	stopCh    chan struct{}
+//	toStop    chan string
+//	closed    bool
+//	stoppedBy string
+//}
+//
+//func (a *async) do(req AsyncRequest) {
+//	select {
+//	case <- a.stopCh:
+//		return
+//	default:
+//	}
+//
+//	resp, err := a.service.Responder(req.responder).Do(req.Request)
+//	value := &AsyncResponse{
+//		responder: a.service.responder,
+//		Response:  resp,
+//		//Success:   s.responder.GetSuccess(),
+//		//Failure:   s.responder.GetFailure(),
+//		Error: err,
+//	}
+//
+//	select {
+//	case <- a.stopCh:
+//		return
+//	case a.ch <- value:
+//	}
+//}
+//
+//func (a *async) Do() []*AsyncResponse {
+//	for i, req := range a.requests {
+//		go a.do(req)
+//	}
+//
+//	for {
+//		select {
+//		case <- a.stopCh:
+//			return a.responses
+//		default:
+//		}
+//
+//		select {
+//		case <- a.stopCh:
+//			return a.responses
+//		case r := <-a.ch:
+//			a.responses = append(a.responses, r)
+//			if len(a.responses) == len(a.requests) {
+//				select {
+//				case a.toStop <- "stopped":
+//				default:
+//				}
+//				return a.responses
+//			}
+//		}
+//	}
+//}
+//
+//func newAsync(service *Service, reqs []AsyncRequest, length ...int) *async {
+//	var l int
+//	if len(length) == 0 || (len(length) == 1 && length[0] == 0) {
+//		l = len(reqs)
+//	} else {
+//		l = length[0]
+//	}
+//
+//	a := &async{
+//		service:   service,
+//		requests:  reqs,
+//		responses: make([]*AsyncResponse, 0),
+//		ch:        make(chan *AsyncResponse, l),
+//		stopCh:    make(chan struct{}),
+//		toStop:    make(chan string, 1),
+//		closed:    false,
+//		length:    l,
+//	}
+//	go a.Moderator()
+//	return a
+//}moq -out

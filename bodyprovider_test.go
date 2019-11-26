@@ -4,15 +4,15 @@
 package meteor
 
 import (
-	"io"
-	"strings"
-	"testing"
 	"bytes"
-	"reflect"
+	"encoding/base64"
+	"io"
+	"io/ioutil"
 	"net/http"
 	"net/http/httptest"
-	"encoding/base64"
-	"io/ioutil"
+	"reflect"
+	"strings"
+	"testing"
 )
 
 func Test_bodyProvider_ContentType(t *testing.T) {
@@ -81,7 +81,6 @@ func TestBodyProviderInterface(t *testing.T) {
 	handler(w, req)
 	resp := w.Result()
 
-
 	if got := resp.Header.Get("Content-Type"); mockedBodyProvider.ContentType() != got {
 		t.Errorf("BodyProvider.ContentType() = %v, want %v", got, mockedBodyProvider.ContentType())
 	}
@@ -89,7 +88,7 @@ func TestBodyProviderInterface(t *testing.T) {
 	mockedBody, _ := mockedBodyProvider.Body()
 	wantBody, _ := ioutil.ReadAll(mockedBody)
 	gotBody, _ := ioutil.ReadAll(resp.Body)
-	if  len(gotBody) != len(wantBody) {
+	if len(gotBody) != len(wantBody) {
 		t.Errorf("BodyProvider.Body() = %v, want %v", gotBody, wantBody)
 	}
 

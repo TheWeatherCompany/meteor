@@ -1,11 +1,11 @@
 package meteor
 
 import (
+	"bytes"
+	"encoding/json"
 	"io"
 	"reflect"
 	"testing"
-	"bytes"
-	"encoding/json"
 )
 
 func Test_jsonBodyProvider_ContentType(t *testing.T) {
@@ -52,7 +52,6 @@ func Test_jsonBodyProvider_Body(t *testing.T) {
 	jsonBody := &bytes.Buffer{}
 	json.NewEncoder(jsonBody).Encode(payload)
 
-
 	tests := []struct {
 		name    string
 		p       jsonBodyProvider
@@ -60,7 +59,7 @@ func Test_jsonBodyProvider_Body(t *testing.T) {
 		wantErr bool
 	}{
 		{"json", jsonBodyProvider{payload}, jsonBody, false},
-		{"error", jsonBodyProvider{func(){}}, nil, true},
+		{"error", jsonBodyProvider{func() {}}, nil, true},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

@@ -2,14 +2,14 @@ package meteor
 
 import (
 	"encoding/base64"
+	"errors"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"reflect"
 	"strings"
-	"fmt"
-	"errors"
 	"time"
 
 	goquery "github.com/google/go-querystring/query"
@@ -463,6 +463,24 @@ func (s *Service) BinaryFailureResponder(failure interface{}) *Service {
 	return s
 }
 
+// BitsetResponder sets the Service's responder to handle a Bitset response.
+func (s *Service) BitsetResponder(failure interface{}, isOKfn ...func(int, *http.Response) bool) *Service {
+	s.responder = BitsetResponder(failure, isOKfn...)
+	return s
+}
+
+// BitsetSuccessResponder sets the Service's responder to handle a Bitset response for success only.
+func (s *Service) BitsetSuccessResponder() *Service {
+	s.responder = BitsetSuccessResponder()
+	return s
+}
+
+// BitsetSuccessResponder sets the Service's responder to handle a Bitset response for success only.
+func (s *Service) BitsetFailureResponder(failure interface{}) *Service {
+	s.responder = BitsetFailureResponder(failure)
+	return s
+}
+
 // Requests
 
 // Request returns a new http.Request created with the Service properties.
@@ -591,9 +609,12 @@ func (s *Service) Receive(successV, failureV interface{}) (*http.Response, error
 		return nil, err
 	}
 
-	resp, err := s.Do(req)
-	successV = s.responder.GetSuccess()
-	failureV = s.responder.GetFailure()
+	resp, err := s.JSONResponder(successV, failureV).Do(req)
+
+	// Assign the response values to the params
+	//successV = s.responder.GetSuccess()
+	//failureV = s.responder.GetFailure()
+
 	return resp, err
 }
 
@@ -646,8 +667,7 @@ func (s *Service) Do(request ...*http.Request) (*http.Response, error) {
 	}()
 
 	// Do correct Response
-	r := s.responder.Respond(req, resp, err)
-	return r.DoResponse()
+	return s.responder.Respond(req, resp, err).DoResponse()
 }
 
 // DoAsync performs the requests in an asychronous pattern.

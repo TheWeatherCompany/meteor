@@ -224,7 +224,7 @@ func (ar *AsyncRequest) ToStop() string {
 type AsyncResponse struct {
 	responder Responder
 	Response  *http.Response
-	Error error
+	Error     error
 }
 
 // GetRequest gets the request.

@@ -9,7 +9,7 @@ import (
 
 // ResponseProvider provides a modifier for the response.
 type Responder interface {
-	Respond(*http.Request, *http.Response, error) (Responder)
+	Respond(*http.Request, *http.Response, error) Responder
 	DoResponse() (*http.Response, error)
 	GetResponse() *http.Response
 	GetSuccess() interface{}

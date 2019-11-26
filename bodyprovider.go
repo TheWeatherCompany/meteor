@@ -3,8 +3,8 @@ package meteor
 //go:generate moq -out bodyprovider_mocks_test.go . BodyProvider
 
 import (
-	"io"
 	"errors"
+	"io"
 )
 
 const (

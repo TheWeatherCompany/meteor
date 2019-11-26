@@ -5,7 +5,6 @@ import (
 	"sync"
 )
 
-
 var (
 	lockBodyProviderMockBody        sync.RWMutex
 	lockBodyProviderMockContentType sync.RWMutex

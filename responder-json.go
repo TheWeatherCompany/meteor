@@ -1,10 +1,11 @@
 package meteor
 
 import (
+	"encoding/json"
 	"io"
 	"io/ioutil"
 	"net/http"
-	"encoding/json"
+	//"bytes"
 )
 
 /** JSON Responder */
@@ -12,7 +13,7 @@ import (
 func JSONSuccessResponder(success interface{}) *jsonResponder {
 	return &jsonResponder{
 		Success: success,
-		isOk: isOk,
+		isOk:    isOk,
 	}
 }
 
@@ -21,7 +22,7 @@ func JSONResponder(success, failure interface{}, isOKfn ...func(int, *http.Respo
 	jr := &jsonResponder{
 		Failure: failure,
 		Success: success,
-		isOk: isOk,
+		isOk:    isOk,
 	}
 
 	if len(isOKfn) > 0 {
@@ -102,12 +103,14 @@ func (r *jsonResponder) GetError() error {
 func decodeResponseJSON(okFn func(int, *http.Response) bool, resp *http.Response, successV, failureV interface{}) (err error) {
 	if okFn(resp.StatusCode, resp) && successV != nil {
 		err = decodeResponseBodyJSON(resp, successV)
+		// For some reason this is considered an ineffectual assignment
 		if err != nil {
 			successV, err = ioutil.ReadAll(resp.Body)
 		}
 		return err
 	} else if failureV != nil {
 		err = decodeResponseBodyJSON(resp, failureV)
+		// For some reason this is considered an ineffectual assignment
 		if err != nil {
 			failureV, err = ioutil.ReadAll(resp.Body)
 		}
@@ -129,4 +132,9 @@ func decodeResponseBodyJSON(resp *http.Response, v interface{}) (err error) {
 		}
 	}
 	return err
+}
+
+func resetResponseBody(resp *http.Response, body io.ReadCloser) {
+	resp.Body = body
+	//ioutil.NopCloser(bytes.NewBuffer(bodyBytes))
 }

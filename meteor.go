@@ -56,7 +56,7 @@ func (c *Meteor) GetHTTPClient() *http.Client {
 // for you (such as that provided by the golang.org/x/oauth2 library).
 func NewMeteor(credentials Credentials, httpClient ...*http.Client) *Meteor {
 	var theClient *http.Client
-	if httpClient == nil || len(httpClient) == 0 || (len(httpClient) == 1 && httpClient[0] == nil) {
+	if len(httpClient) == 0 || (len(httpClient) == 1 && httpClient[0] == nil) {
 		theClient = GetDefaultClient()
 	} else {
 		theClient = httpClient[0]
@@ -66,6 +66,26 @@ func NewMeteor(credentials Credentials, httpClient ...*http.Client) *Meteor {
 		credentials: credentials,
 		UserAgent:   UserAgent,
 		Common:      New().Client(theClient),
+	}
+
+	return c
+}
+
+// NewClient returns a new API client. If a nil httpClient is
+// provided, http.DefaultClient will be used. To use API methods which require
+// authentication, provide an http.Client that will perform the authentication
+// for you (such as that provided by the golang.org/x/oauth2 library).
+func NewSimpleMeteor(httpClient ...*http.Client) *Meteor {
+	var theClient *http.Client
+	if len(httpClient) == 0 || (len(httpClient) == 1 && httpClient[0] == nil) {
+		theClient = GetDefaultClient()
+	} else {
+		theClient = httpClient[0]
+	}
+	c := &Meteor{
+		httpClient: theClient,
+		UserAgent:  UserAgent,
+		Common:     New().Client(theClient),
 	}
 
 	return c

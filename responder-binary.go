@@ -10,7 +10,7 @@ import (
 func BinarySuccessResponder() *binaryResponder {
 	return &binaryResponder{
 		Success: &[]byte{},
-		isOk: isOk,
+		isOk:    isOk,
 	}
 }
 
@@ -19,7 +19,7 @@ func BinaryFailureResponder(failure interface{}) *binaryResponder {
 	return &binaryResponder{
 		Failure: failure,
 		Success: &[]byte{},
-		isOk: isOk,
+		isOk:    isOk,
 	}
 }
 
@@ -70,7 +70,17 @@ func (r *binaryResponder) DoResponse() (*http.Response, error) {
 	if ok {
 		r.Success, r.Error = ioutil.ReadAll(r.Response.Body)
 	} else if r.Failure != nil {
-		r.Error = decodeResponseJSON(r.IsOK, r.Response, nil, r.Failure)
+		if r.IsOK(r.Response.StatusCode, r.Response) && r.Success != nil {
+			r.Error = decodeResponseBodyJSON(r.Response, r.Success)
+			if r.Error != nil {
+				r.Success, r.Error = ioutil.ReadAll(r.Response.Body)
+			}
+		} else if r.Failure != nil {
+			r.Error = decodeResponseBodyJSON(r.Response, r.Failure)
+			if r.Error != nil {
+				r.Failure, r.Error = ioutil.ReadAll(r.Response.Body)
+			}
+		}
 	}
 
 	return r.Response, r.Error
